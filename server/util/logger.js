@@ -3,7 +3,7 @@ var _ = require('lodash');
 
 var config = require('../config/config');
 
-// create a noop function for when loggin is disabled
+// create a noop (no operation) function for when loggin is disabled
 var noop = function () {};
 
 // check if loggin is enabled in the config
@@ -17,13 +17,16 @@ var logger = {
           var string = JSON.stringify(arg, 2);
           return string.magenta;
         } else {
-          // coerce to string to color
           arg = String(arg);
           return arg.magenta;
         }
       });
 
     consoleLog.apply(console, args);
+  },
+
+  error: function () {
+    consoleLog.apply(console, _.toArray(arguments));
   },
 };
 
