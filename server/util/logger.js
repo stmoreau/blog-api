@@ -3,22 +3,20 @@ var _ = require('lodash');
 
 var config = require('../config/config');
 
-// create a noop (no operation) function for when loggin is disabled
 var noop = function () {};
 
-// check if loggin is enabled in the config
 var consoleLog = config.logging ? console.log.bind(console) : noop;
 
 var logger = {
   log: function () {
+    var tag = '[ ✨ LOG ✨ ]'.green;
     var args = _.toArray(arguments)
       .map(function (arg) {
         if (typeof arg === 'object') {
-          var string = JSON.stringify(arg, 2);
-          return string.magenta;
+          var string = JSON.stringify(arg, null, 2);
+          return tag + '  ' + string.cyan;
         } else {
-          arg = String(arg);
-          return arg.magenta;
+          return tag + '  ' + arg.cyan;
         }
       });
 
@@ -26,7 +24,15 @@ var logger = {
   },
 
   error: function () {
-    consoleLog.apply(console, _.toArray(arguments));
+    var args = _.toArray(arguments)
+      .map(function (arg) {
+        arg = arg.stack || arg;
+        var name = arg.name || '[ ❌ ERROR ❌ ]';
+        var log = name.yellow + '  ' + arg.red;
+        return log;
+      });
+
+    consoleLog.apply(console, args);
   },
 };
 
