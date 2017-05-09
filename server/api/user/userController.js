@@ -4,6 +4,8 @@ var signToken = require('../../auth/auth').signToken;
 
 exports.params = function (req, res, next, id) {
   User.findById(id)
+    .select('-password')
+    .exec()
     .then(function (user) {
       if (!user) {
         next(new Error('No user with that id'));
@@ -20,8 +22,12 @@ exports.params = function (req, res, next, id) {
 
 exports.get = function (req, res, next) {
   User.find({})
+    .select('-password')
+    .exec()
     .then(function (users) {
-      res.json(users);
+      res.json(users.map(function (user) {
+        return user.toJson();
+      }));
     },
 
     function (err) {
@@ -30,8 +36,8 @@ exports.get = function (req, res, next) {
 };
 
 exports.getOne = function (req, res, next) {
-  var user = req.user;
-  res.json(user);
+  var user = req.user.toJson();
+  res.json(user.toJson());
 };
 
 exports.put = function (req, res, next) {
@@ -45,15 +51,16 @@ exports.put = function (req, res, next) {
     if (err) {
       next(err);
     } else {
-      res.json(saved);
+      res.json(saved.toJson());
     }
   });
 };
 
 exports.post = function (req, res, next) {
   var newUser = new User(req.body);
+
   newUser.save(function (err, user) {
-    if (err) {next(err);}
+    if (err) { return next(err);}
 
     var token = signToken(user._id);
     res.json({ token: token });
@@ -65,7 +72,11 @@ exports.delete = function (req, res, next) {
     if (err) {
       next(err);
     } else {
-      res.json(removed);
+      res.json(removed.toJson());
     }
   });
+};
+
+exports.me = function (req, res) {
+  res.json(req.user.toJson());
 };
